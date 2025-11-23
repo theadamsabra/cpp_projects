@@ -32,6 +32,14 @@ class SimpleLinearModel
     };
 
     double mean_squared_error(vector<double> x, vector<double> y){
+        /*
+        Calculate mean squared error loss term. 
+
+        @param x input data
+        @param y output data
+
+        @returns MSE Loss 
+        */
         double n = x.size();
         double coeff = (1/n);
 
@@ -45,6 +53,14 @@ class SimpleLinearModel
     };
 
     double get_weight_grad(vector<double> x, vector<double> y) {
+        /*
+        Calculate gradient of weight term.
+
+        @param x input data
+        @param y output data
+
+        @returns gradient of weight term.
+        */
         double n = x.size();
         double coeff = -2 / n; 
         double grad_W = 0.0;
@@ -58,6 +74,14 @@ class SimpleLinearModel
     };
 
     float get_bias_grad(vector<double> x, vector<double> y) {
+        /*
+        Calculate gradient of bias (or intercept) term.
+
+        @param x input data
+        @param y output data
+
+        @returns gradient of bias (or intercept) term.
+        */
         int n = x.size();
         double coeff = -2 / n;
         double grad_b = 0.0;
@@ -70,6 +94,14 @@ class SimpleLinearModel
     };
 
     void backpropogate(double grad_W, double grad_b, double lr){
+        /*
+        Simple backpropogation function.
+        
+        @param grad_W gradient of the weight(s)
+        @param grad_b gradient of the bias(es)
+        @param lr learning rate for gradient descent
+        */
+
         // TODO: W and b aren't updating properly.
         W = get_weight();
         b = get_bias();
@@ -83,7 +115,14 @@ class SimpleLinearModel
 
     // Train function:
     void train(vector<double> x, vector<double> y, int num_epochs, double lr){
+        /*
+        Core training loop of the linear model. 
 
+        @param x input data
+        @param y output data
+        @param num_epochs number of epochs to train for
+        @param lr learning rate for gradient descent
+        */
         for (int epoch_num=0; epoch_num<num_epochs; epoch_num++){
             cout << "Epoch" << epoch_num+1 << "\n" << endl;
             double mse_loss = mean_squared_error(x, y);
@@ -105,6 +144,8 @@ pair <vector<double>, vector<double>>  generate_training_data(int N, int true_W,
     @param N number of samples to randomly generate
     @param true_W true weight of the linear model to be predicted 
     @param true_b true bias of the linear model to be predicted
+
+    @returns generated x_train, y_train data pairs of shape (N,).
     */
 
     // Generate random device, set seed, and generate
