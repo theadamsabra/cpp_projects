@@ -1,4 +1,6 @@
 #include <vector>
+#include <iomanip>
+#include <cmath>
 #include <iostream>
 #include <random>
 using namespace std;
@@ -7,13 +9,91 @@ class SimpleLinearModel
 {
     private:
     // Define weights and biases:
+    // TODO: Infer dimensionality when we go up from 1D vectors
     double W = rand();
     double b = rand();
 
     public:
+    
+    double get_weight(){
+        return W;
+    }
+
+    double get_bias(){
+        return b;
+    };
+
+    void update_weight(double new_weight){
+        W = new_weight;
+    };
+
+    void update_bias(double new_bias){
+        b = new_bias;
+    };
+
+    double mean_squared_error(vector<double> x, vector<double> y){
+        double n = x.size();
+        double coeff = (1/n);
+
+        double mse_prenorm = 0.0;
+        for (int i=0; i<n; i++){
+            double x_i = x[i];
+            double y_i = y[i];
+            mse_prenorm += pow((y_i - (W*x_i + b)), 2);
+        };
+        return coeff * mse_prenorm;
+    };
+
+    double get_weight_grad(vector<double> x, vector<double> y) {
+        double n = x.size();
+        double coeff = -2 / n; 
+        double grad_W = 0.0;
+
+        for (int i=0; i<n; i++){
+            double x_i = x[i];
+            double y_i = y[i];
+            grad_W = grad_W + (x_i * (y_i - (W*x_i + b)));
+        };
+        return coeff * grad_W;
+    };
+
+    float get_bias_grad(vector<double> x, vector<double> y) {
+        int n = x.size();
+        double coeff = -2 / n;
+        double grad_b = 0.0;
+        for (int i=0; i<n; i++){
+            double x_i = x[i];
+            double y_i = y[i];
+            grad_b = grad_b + (y_i - (W*x_i + b));
+        };
+        return coeff * grad_b;
+    };
+
+    void backpropogate(double grad_W, double grad_b, double lr){
+        // TODO: W and b aren't updating properly.
+        W = get_weight();
+        b = get_bias();
+
+        W = W - (lr * grad_W);
+        b = b - (lr * grad_b);
+
+        update_weight(W);
+        update_bias(b);
+    };
 
     // Train function:
-    void train(vector<double> x, vector<double> y, int num_epochs, float lr){
+    void train(vector<double> x, vector<double> y, int num_epochs, double lr){
+
+        for (int epoch_num=0; epoch_num<num_epochs; epoch_num++){
+            cout << "Epoch" << epoch_num+1 << "\n" << endl;
+            double mse_loss = mean_squared_error(x, y);
+            cout << "MSE Loss:" << mse_loss << "\n" << endl;
+
+            double grad_W = get_weight_grad(x, y);
+            double grad_b = get_bias_grad(x, y);
+
+            backpropogate(grad_W, grad_b, lr);
+        };
 
     };
 };
@@ -48,8 +128,8 @@ pair <vector<double>, vector<double>>  generate_training_data(int N, int true_W,
 // Main function to test the linear model:
 int main(){
     // Params for training:
-    int num_epochs = 10;
-    float lr = 0.01;
+    int num_epochs = 1000;
+    double lr = 0.1;
 
     // This can be really whatever
     int N = 10000;
@@ -59,5 +139,7 @@ int main(){
     // This is C++ 17.
     // Guess I'm using this for now
     auto [x_train, y_train] = generate_training_data(N, true_W, true_b);
+    SimpleLinearModel lm;
+    lm.train(x_train, y_train, num_epochs, lr);
     return 0;
 }
