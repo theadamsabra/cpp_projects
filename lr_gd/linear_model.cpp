@@ -7,13 +7,18 @@ using namespace std;
 
 class SimpleLinearModel
 {
-    private:
+    public:
     // Define weights and biases:
     // TODO: Infer dimensionality when we go up from 1D vectors
-    double W = rand();
-    double b = rand();
+    double W;
+    double b;
 
-    public:
+    // Set up constructor:
+    SimpleLinearModel(){
+        // Just instantiate some arbitrary numbers:
+        W = 0.0;
+        b = 0.0;
+    }
     
     double get_weight(){
         return W;
@@ -113,6 +118,22 @@ class SimpleLinearModel
         update_bias(b);
     };
 
+    vector<double> predict(vector<double> x){
+        /*
+        Get predictions 
+
+        @param x input data
+
+        @returns y_pred predicted output
+        */
+        int n = x.size();
+        vector<double> y_pred(n);
+        for (int i; i<n; i++){
+            y_pred[i] = (W * x[i] + b);
+        };
+        return y_pred;
+    };
+
     // Train function:
     void train(vector<double> x, vector<double> y, int num_epochs, double lr){
         /*
@@ -152,15 +173,18 @@ pair <vector<double>, vector<double>>  generate_training_data(int N, int true_W,
     // a random gaussian:
     mt19937 generator(36);
     normal_distribution<double> standard_gaussian(0, 1);
+    uniform_real_distribution<double> uniform(0, 100);
 
     // Generate dummy x_train data: 
     vector<double> x_train(N), y_train(N);
 
     // Construct the data: 
     for (int i=0; i<N; i++){
-        double random_number = standard_gaussian(generator);
-        x_train[i] = random_number;
-        y_train[i] = (true_W * random_number) + true_b;
+        double random_input = uniform(generator);
+        double random_error = standard_gaussian(generator);
+
+        x_train[i] = random_input;
+        y_train[i] = (true_W * random_input) + true_b + random_error;
     }
 
     return make_pair(x_train, y_train);
