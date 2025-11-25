@@ -19,24 +19,8 @@ class SimpleLinearModel
         W = 0.0;
         b = 0.0;
     }
-    
-    double get_weight(){
-        return W;
-    }
 
-    double get_bias(){
-        return b;
-    };
-
-    void update_weight(double new_weight){
-        W = new_weight;
-    };
-
-    void update_bias(double new_bias){
-        b = new_bias;
-    };
-
-    double mean_squared_error(vector<double> x, vector<double> y){
+    double mean_squared_error(vector<double> y, vector<double> y_pred){
         /*
         Calculate mean squared error loss term. 
 
@@ -45,40 +29,39 @@ class SimpleLinearModel
 
         @returns MSE Loss 
         */
-        double n = x.size();
+        double n = y.size();
         double coeff = (1/n);
 
         double mse_prenorm = 0.0;
         for (int i=0; i<n; i++){
-            double x_i = x[i];
-            double y_i = y[i];
-            mse_prenorm += pow((y_i - (W*x_i + b)), 2);
+            mse_prenorm += pow((y[i] - y_pred[i]), 2);
         };
         return coeff * mse_prenorm;
     };
-
-    double get_weight_grad(vector<double> x, vector<double> y) {
+    /*
+    TODO: Figure out why model is diverging instead of converging! 
+    */
+    double get_weight_grad(vector<double> x, vector<double> y, vector<double> y_pred) {
         /*
         Calculate gradient of weight term.
 
         @param x input data
-        @param y output data
+        @param y ground truth data
+        @param y_pred predicted data
 
         @returns gradient of weight term.
         */
         double n = x.size();
-        double coeff = -2 / n; 
+        double coeff = (-2 / n); 
         double grad_W = 0.0;
 
         for (int i=0; i<n; i++){
-            double x_i = x[i];
-            double y_i = y[i];
-            grad_W = grad_W + (x_i * (y_i - (W*x_i + b)));
+            grad_W += (x[i] * (y[i] - y_pred[i]));
         };
         return coeff * grad_W;
     };
 
-    float get_bias_grad(vector<double> x, vector<double> y) {
+    float get_bias_grad(vector<double> y, vector<double> y_pred) {
         /*
         Calculate gradient of bias (or intercept) term.
 
@@ -87,13 +70,12 @@ class SimpleLinearModel
 
         @returns gradient of bias (or intercept) term.
         */
-        int n = x.size();
-        double coeff = -2 / n;
+        double n = y.size();
+        double coeff = (-2 / n);
         double grad_b = 0.0;
+
         for (int i=0; i<n; i++){
-            double x_i = x[i];
-            double y_i = y[i];
-            grad_b = grad_b + (y_i - (W*x_i + b));
+            grad_b += (y[i] - y_pred[i]);
         };
         return coeff * grad_b;
     };
@@ -106,16 +88,8 @@ class SimpleLinearModel
         @param grad_b gradient of the bias(es)
         @param lr learning rate for gradient descent
         */
-
-        // TODO: W and b aren't updating properly.
-        W = get_weight();
-        b = get_bias();
-
         W = W - (lr * grad_W);
         b = b - (lr * grad_b);
-
-        update_weight(W);
-        update_bias(b);
     };
 
     vector<double> predict(vector<double> x){
@@ -145,16 +119,16 @@ class SimpleLinearModel
         @param lr learning rate for gradient descent
         */
         for (int epoch_num=0; epoch_num<num_epochs; epoch_num++){
+            vector<double> y_pred = predict(x);
             cout << "Epoch" << epoch_num+1 << "\n" << endl;
-            double mse_loss = mean_squared_error(x, y);
+            double mse_loss = mean_squared_error(y, y_pred);
             cout << "MSE Loss:" << mse_loss << "\n" << endl;
 
-            double grad_W = get_weight_grad(x, y);
-            double grad_b = get_bias_grad(x, y);
+            double grad_W = get_weight_grad(x, y, y_pred);
+            double grad_b = get_bias_grad(y, y_pred);
 
             backpropogate(grad_W, grad_b, lr);
         };
-
     };
 };
 
@@ -193,8 +167,8 @@ pair <vector<double>, vector<double>>  generate_training_data(int N, int true_W,
 // Main function to test the linear model:
 int main(){
     // Params for training:
-    int num_epochs = 1000;
-    double lr = 0.1;
+    int num_epochs = 10;
+    double lr = 0.001;
 
     // This can be really whatever
     int N = 10000;
