@@ -30,17 +30,14 @@ class SimpleLinearModel
         @returns MSE Loss 
         */
         double n = y.size();
-        double coeff = (1/n);
 
-        double mse_prenorm = 0.0;
+        double mse = 0.0;
         for (int i=0; i<n; i++){
-            mse_prenorm += pow((y[i] - y_pred[i]), 2);
+            mse += pow((y[i] - y_pred[i]), 2);
         };
-        return coeff * mse_prenorm;
+        return mse / (2*n);
     };
-    /*
-    TODO: Figure out why model is diverging instead of converging! 
-    */
+
     double get_weight_grad(vector<double> x, vector<double> y, vector<double> y_pred) {
         /*
         Calculate gradient of weight term.
@@ -52,13 +49,13 @@ class SimpleLinearModel
         @returns gradient of weight term.
         */
         double n = x.size();
-        double coeff = (-2 / n); 
+        double coeff = (1 / n); 
         double grad_W = 0.0;
 
         for (int i=0; i<n; i++){
-            grad_W += (x[i] * (y[i] - y_pred[i]));
+            grad_W += (x[i] * (y_pred[i] - y[i]));
         };
-        return coeff * grad_W;
+        return grad_W / n;
     };
 
     float get_bias_grad(vector<double> y, vector<double> y_pred) {
@@ -71,13 +68,13 @@ class SimpleLinearModel
         @returns gradient of bias (or intercept) term.
         */
         double n = y.size();
-        double coeff = (-2 / n);
+        double coeff = (1 / n);
         double grad_b = 0.0;
 
         for (int i=0; i<n; i++){
-            grad_b += (y[i] - y_pred[i]);
+            grad_b += (y_pred[i] - y[i]);
         };
-        return coeff * grad_b;
+        return grad_b / n;
     };
 
     void backpropogate(double grad_W, double grad_b, double lr){
@@ -120,7 +117,7 @@ class SimpleLinearModel
         */
         for (int epoch_num=0; epoch_num<num_epochs; epoch_num++){
             vector<double> y_pred = predict(x);
-            cout << "Epoch" << epoch_num+1 << "\n" << endl;
+            cout << "Epoch " << epoch_num+1 << "\n" << endl;
             double mse_loss = mean_squared_error(y, y_pred);
             cout << "MSE Loss:" << mse_loss << "\n" << endl;
 
@@ -147,7 +144,7 @@ pair <vector<double>, vector<double>>  generate_training_data(int N, int true_W,
     // a random gaussian:
     mt19937 generator(36);
     normal_distribution<double> standard_gaussian(0, 1);
-    uniform_real_distribution<double> uniform(0, 100);
+    uniform_real_distribution<double> uniform(0, 10);
 
     // Generate dummy x_train data: 
     vector<double> x_train(N), y_train(N);
@@ -167,8 +164,8 @@ pair <vector<double>, vector<double>>  generate_training_data(int N, int true_W,
 // Main function to test the linear model:
 int main(){
     // Params for training:
-    int num_epochs = 10;
-    double lr = 0.001;
+    int num_epochs = 1000;
+    double lr = 0.01;
 
     // This can be really whatever
     int N = 10000;
