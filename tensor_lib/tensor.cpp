@@ -2,12 +2,13 @@
 #include <iostream>
 #include <optional>
 #include <cassert>
+#include <any>
 using namespace std;
 
-struct Tensor
+struct Vector 
 {
     /*
-    Core Tensor type.
+    Core Vector type.
 
     @param data
     */
@@ -17,7 +18,7 @@ private:
 
 public:
     // Default constructor is an emtpy tensor:
-    Tensor(vector<double> d = {})
+    Vector(vector<double> d = {})
     {
         data = d;
     };
@@ -34,7 +35,7 @@ public:
     };
 
     // Overload + to be entry-wise addition
-    Tensor operator+(Tensor t)
+    Vector operator+(Vector &t)
     {
         int n = data.size();
         int m = t.size();
@@ -46,11 +47,11 @@ public:
             output[i] = data[i] + t[i];
         };
 
-        return Tensor(output);
+        return Vector(output);
     };
 
     // Overload * to be (scalar) entry-wise multiplication
-    Tensor operator*(int scalar)
+    Vector operator*(int &scalar)
     {
         int n = data.size();
         vector<double> output(n);
@@ -60,6 +61,25 @@ public:
             output[i] = data[i] * scalar;
         };
 
-        return Tensor(output);
+        return Vector(output);
     };
+
+    // Overload / to be (scalar) entry-wise multiplication
+    Vector operator/(int &scalar)
+    {
+        int n = data.size();
+        vector<double> output(n);
+
+        for (int i = 0; i < n; i++)
+        {
+            output[i] = data[i] / scalar;
+        };
+
+        return Vector(output);
+    };
+};
+
+int main(){
+    Vector t({1,1,1});
+    return 0;
 };
