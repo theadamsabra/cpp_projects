@@ -1,85 +1,88 @@
 #include <vector>
 #include <iostream>
 #include <optional>
+#include <tuple>
+#include <numeric>
 #include <cassert>
-#include <any>
+#include <functional>
+#include <algorithm>
+#include <variant>
 using namespace std;
 
-struct Vector 
+template <typename T>
+
+using Data = vector<T>;
+using Shape = vector<size_t>;
+using Strides = vector<size_t>;
+using Index = vector<size_t>;
+
+template <typename T>
+class Tensor 
 {
     /*
-    Core Vector type.
+    Core Tensor type.
 
-    @param data
+    @param Shape shape: shape of tensor
+    @param Data<T> data: data within tensor. Datatype must be specified.
+    @param Strides stride: data within tensor
     */
 
 private:
-    vector<double> data;
+    Shape shape;
+    Data<T> data;
+    Strides stride;
+
+    void calculate_strides(){
+        /*
+        Construct stride tensor for indexing. 
+        */
+        if (shape.empty()) return;
+
+        size_t num_dims = shape.size();
+        Strides stride(num_dims);
+
+        for (int i=0; i<num_dims; i++){
+            if (i != num_dims - 1){
+                stride[i] = accumulate(&shape[i + 1], &shape[num_dims], 1, multiplies<size_t>());
+            } else {
+                stride[i] = 1;
+            };
+
+        reverse(stride.begin(), stride.end());
+        };
+    };
 
 public:
-    // Default constructor is an emtpy tensor:
-    Vector(vector<double> d = {})
+    // Default constructor is an emtpy tensor of specified shape:
+    Tensor(const Shape shape) : shape(shape)
     {
-        data = d;
+        calculate_strides();
+        size_t total_size = accumulate(shape.begin(), shape.end(), 1, multiplies<size_t>());
+        data.resize(total_size);
     };
 
-    int size(){
-        return data.size();
-    };
-
-    // Overload operators:
-
-    // Overlaod indexing:
-    double operator[](int i){
-        return data[i];
-    };
-
-    // Overload + to be entry-wise addition
-    Vector operator+(Vector &t)
-    {
-        int n = data.size();
-        int m = t.size();
-        assert(n == m);
-        vector<double> output(n);
-
-        for (int i = 0; i < n; i++)
-        {
-            output[i] = data[i] + t[i];
+    // Overload indexing:
+    T& operator[](Index& index){
+        size_t n = index.size();
+        int global_idx = 0; 
+        for (int i=0; i<n; i++){
+            global_idx += index[i] * stride[i];
         };
-
-        return Vector(output);
+        return data[global_idx];
     };
 
-    // Overload * to be (scalar) entry-wise multiplication
-    Vector operator*(int &scalar)
-    {
-        int n = data.size();
-        vector<double> output(n);
-
-        for (int i = 0; i < n; i++)
-        {
-            output[i] = data[i] * scalar;
+    // Read-only indexing:
+    const T& operator[](Index& index) const {
+        size_t n = index.size();
+        int global_idx = 0; 
+        for (int i=0; i<n; i++){
+            global_idx += index[i] * stride[i];
         };
-
-        return Vector(output);
-    };
-
-    // Overload / to be (scalar) entry-wise multiplication
-    Vector operator/(int &scalar)
-    {
-        int n = data.size();
-        vector<double> output(n);
-
-        for (int i = 0; i < n; i++)
-        {
-            output[i] = data[i] / scalar;
-        };
-
-        return Vector(output);
+        return data[global_idx];
     };
 };
 
 int main(){
-    Vector t({1,1,1});
+    Tensor<float> t({2,3,4});
     return 0;
 };
