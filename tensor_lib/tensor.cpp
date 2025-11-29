@@ -104,6 +104,26 @@ public:
         };
         return output;
     };
+
+    // Overload multiplication 
+    Tensor<T&> operator*(Tensor<T&> t){
+        // Verify shape is equal:
+        Shape self_shape = shape; 
+        Shape additive_shape = t.get_shape();
+        assert(self_shape == additive_shape);
+
+        // Verify rank is equal:
+        size_t n = self_shape.size();
+        size_t m = additive_shape.size();
+        assert(n == m);
+
+        Tensor<T> output(self_shape);
+        // Add by simple indexing across entire vector:
+        for (int i=0; i<data.size(); i++){
+            output[i] = data[i] * additive_shape[i];
+        };
+        return output;
+    };
 };
 
 int main(){
