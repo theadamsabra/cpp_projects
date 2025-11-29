@@ -15,6 +15,7 @@ using Data = vector<T>;
 using Shape = vector<size_t>;
 using Strides = vector<size_t>;
 using Index = vector<size_t>;
+using N = size_t;
 
 template <typename T>
 class Tensor 
@@ -61,6 +62,9 @@ public:
         data.resize(total_size);
     };
 
+    Shape get_shape(){
+        return shape;
+    };
     // Overload indexing:
     T& operator[](Index& index){
         size_t n = index.size();
@@ -79,6 +83,26 @@ public:
             global_idx += index[i] * stride[i];
         };
         return data[global_idx];
+    };
+
+    // Overload addition
+    Tensor<T&> operator+(Tensor<T&> t){
+        // Verify shape is equal:
+        Shape self_shape = shape; 
+        Shape additive_shape = t.get_shape();
+        assert(self_shape == additive_shape);
+
+        // Verify rank is equal:
+        size_t n = self_shape.size();
+        size_t m = additive_shape.size();
+        assert(n == m);
+
+        Tensor<T> output(self_shape);
+        // Add by simple indexing across entire vector:
+        for (int i=0; i<data.size(); i++){
+            output[i] = data[i] + additive_shape[i];
+        };
+        return output;
     };
 };
 
